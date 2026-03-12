@@ -1,169 +1,186 @@
-/* =======================================
-   SEMINAR HALL SCHEDULER
-   FRONTEND BOOKING + ADMIN SCRIPT
-======================================= */
-
-/* ==============================
-   BOOKING FORM (INDEX PAGE)
-============================== */
-
-const bookingForm = document.getElementById("hallBookingForm");
-
-if (bookingForm) {
-
-bookingForm.addEventListener("submit", function(event){
-
-event.preventDefault();
-
-/* GET FORM VALUES */
-
-const name = document.getElementById("userName").value.trim();
-const email = document.getElementById("userEmail").value.trim();
-const phone = document.getElementById("userPhone").value.trim();
-const hallId = document.getElementById("hallSelect").value;
-
-const eventDate = document.getElementById("eventDate").value;
-
-const startTime = document.getElementById("startTime").value;
-const endTime = document.getElementById("endTime").value;
+const API="http://localhost:5000";
 
 
-/* FORM VALIDATION */
 
-if(name === ""){
-alert("Please enter your full name");
-return;
-}
 
-if(email === ""){
-alert("Please enter your email");
-return;
-}
+function signup(){
 
-if(!email.includes("@")){
-alert("Please enter a valid email address");
-return;
-}
+fetch(API+"/signup",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({
+name:document.getElementById("name").value,
+email:document.getElementById("emailSignup").value,
+phone:document.getElementById("phone").value,
+password:document.getElementById("passwordSignup").value,
+role:document.getElementById("roleSignup").value
+})
+})
 
-if(phone.length < 10){
-alert("Phone number must contain at least 10 digits");
-return;
-}
+.then(res=>res.text())
+.then(data=>alert(data))
 
-if(hallId === ""){
-alert("Please select a seminar hall");
-return;
-}
+.catch(err=>{
+console.error(err);
+alert("Signup failed");
+})
 
-if(eventDate === ""){
-alert("Please select an event date");
-return;
-}
-
-if(startTime === "" || endTime === ""){
-alert("Please select both start time and end time");
-return;
-}
-
-/* TIME VALIDATION */
-
-if(startTime >= endTime){
-alert("End time must be later than start time");
-return;
 }
 
 
-/* CREATE BOOKING OBJECT */
-
-const bookingDetails = {
-
-name: name,
-email: email,
-phone: phone,
-hall_id: hallId,
-date: eventDate,
-start_time: startTime,
-end_time: endTime
-
-};
-
-console.log("Booking Request:", bookingDetails);
 
 
-/* SEND DATA TO BACKEND */
+function login(){
 
-fetch("http://localhost:3000/book",{
+fetch(API+"/login",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({
+email:email.value,
+password:password.value,
+role:role.value
+})
+})
 
-method: "POST",
+.then(res=>res.json())
+
+.then(data=>{
+
+if(data.success){
+
+localStorage.setItem("user",JSON.stringify(data.data));
+localStorage.setItem("role",role.value);
+
+if(role.value==="user"){
+location="calendar.html";
+}else{
+location="admin.html";
+}
+
+}
+else{
+alert("Invalid login");
+}
+
+})
+
+.catch(err=>{
+console.error(err);
+alert("Login error");
+})
+
+}
+
+
+
+
+
+function book(){
+
+const user=JSON.parse(localStorage.getItem("user"));
+
+if(!user){
+alert("User not logged in");
+return;
+}
+
+
+const eventName=document.getElementById("event").value || "Seminar";
+
+fetch(API+"/book",{
+
+method:"POST",
 
 headers:{
-"Content-Type": "application/json"
+"Content-Type":"application/json"
 },
 
-body: JSON.stringify(bookingDetails)
+body:JSON.stringify({
+
+date:date.value,
+start:start.value,
+end:end.value,
+event:eventName,
+details:details.value,
+dept:dept.value,
+user_id:user.user_id,
+hall_id:document.getElementById("hall").value   
 
 })
 
-.then(response => response.text())
-
-.then(data => {
-
-alert("Booking request submitted successfully!");
-
-bookingForm.reset();
-
 })
 
-.catch(error => {
+.then(res=>res.text())
 
-console.error("Error:", error);
+.then(data=>{
+alert(data);
+location="dashboard.html";
+})
 
-alert("Unable to submit booking. Please try again.");
-
-});
-
-});
+.catch(err=>{
+console.error(err);
+alert("Booking failed");
+})
 
 }
 
 
-/* ==============================
-   ADMIN DASHBOARD
-============================== */
 
-const bookingTable = document.getElementById("bookingTable");
 
-if (bookingTable) {
 
-fetch("http://localhost:3000/bookings")
+document.addEventListener("DOMContentLoaded",function(){
 
-.then(res => res.json())
+if(document.getElementById("calendar")){
 
-.then(data => {
+fetch(API+"/bookings")
 
-data.forEach(booking => {
+.then(res=>res.json())
 
-bookingTable.innerHTML += `
-<tr>
-<td>${booking.id}</td>
-<td>${booking.name}</td>
-<td>${booking.email}</td>
-<td>${booking.phone}</td>
-<td>${booking.hall_id}</td>
-<td>${booking.date}</td>
-<td>${booking.start_time} - ${booking.end_time}</td>
-<td>${booking.status}</td>
-<td>
-<button class="btn btn-success btn-sm">Approve</button>
-<button class="btn btn-danger btn-sm">Reject</button>
-</td>
-</tr>
-`;
+.then(data=>{
 
-});
+console.log("Bookings:",data);
+
+let events=data.map(b=>({
+
+title: b.event_name || "Seminar",
+
+start: b.booking_date + "T" + b.start_time,
+
+end: b.booking_date + "T" + b.end_time,
+
+color: (b.status==="Approved") ? "red" : "orange"
+
+}));
+
+let calendar=new FullCalendar.Calendar(
+
+document.getElementById("calendar"),
+
+{
+
+initialView:"dayGridMonth",
+
+headerToolbar:{
+left:"prev,next today",
+center:"title",
+right:"dayGridMonth,timeGridWeek,timeGridDay"
+},
+
+events:events
+
+}
+
+);
+
+calendar.render();
 
 })
 
-.catch(err => console.log(err));
+.catch(err=>{
+console.error(err);
+alert("Failed to load calendar");
+});
 
 }
+
+});
