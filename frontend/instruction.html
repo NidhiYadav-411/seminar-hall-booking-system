@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta charset="UTF-8">
+<title>Seminar Hall Booking Instructions</title>
+
+<style>
+
+body{
+font-family: Arial, sans-serif;
+margin:0;
+padding:0;
+background:#0c0c0c;
+}
+
+.header{
+text-align:center;
+padding:40px;
+color:#ff7a00;
+}
+
+.container{
+width:85%;
+margin:auto;
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:40px;
+}
+
+.hall-image img{
+width:99%;
+height:440px;
+object-fit:cover;
+border-radius:10px;
+box-shadow:0 8px 20px rgba(0,0,0,0.5);
+}
+
+.hall-info{
+background:#1b1b1b;
+padding:25px;
+border-radius:10px;
+box-shadow:0 10px 25px rgba(0,0,0,0.6);
+}
+
+.hall-info h2{
+margin-top:0;
+color:#ff7a00;
+}
+
+.hall-info h3{
+color:#ff7a00;
+}
+
+.hall-info p{
+color:#cfcfcf;
+}
+
+.hall-info ul{
+padding-left:20px;
+line-height:1.6;
+color:#ffffff;
+}
+
+.button-container{
+text-align:center;
+margin:70px;
+}
+
+.login-btn{
+padding:15px 45px;
+font-size:18px;
+background:#ff7a00;
+border:none;
+color:white;
+border-radius:8px;
+cursor:pointer;
+transition:0.3s;
+}
+
+.login-btn:hover{
+background:#e66d00;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="header">
+
+<h1>Seminar Hall Booking Instructions</h1>
+<p>Please read the information about each hall before proceeding with booking.</p>
+
+</div>
+
+<div class="container">
+
+<div class="hall-image">
+<img src="Seminar_Hall.jpg">
+</div>
+
+<div class="hall-image">
+<img src="imert.jpg">
+</div>
+
+<div class="hall-info">
+
+<h2>Seminar Hall 405</h2>
+
+<p><b>Location:</b> Main Academic Building</p>
+<p><b>Capacity:</b> 100 – 120 People</p>
+
+<h3>Facilities</h3>
+
+<ul>
+<li>Projector and projection screen</li>
+<li>Audio sound system</li>
+<li>Podium and microphone</li>
+<li>Whiteboard</li>
+<li>Comfortable seating arrangement</li>
+</ul>
+
+<h3>Suitable For</h3>
+
+<ul>
+<li>Student presentations</li>
+<li>Workshops</li>
+<li>Academic seminars</li>
+<li>Guest lectures</li>
+</ul>
+
+<h3>Important Rules</h3>
+
+<ul>
+<li>Maintain cleanliness of the hall</li>
+<li>Do not damage equipment</li>
+<li>Use hall only for academic purposes</li>
+<li>Vacate hall before next booking slot</li>
+</ul>
+
+<h3>Coordinator</h3>
+
+<ul>
+<li><b>Name:</b> Pranjal Khairnar</li>
+<li><b>Phone:</b> 43565432</li>
+<li><b>Email:</b> pranjalkhairnar2024.comp@mmcoe.edu.in</li>
+</ul>
+
+</div>
+
+<div class="hall-info">
+
+<h2>IMERT Seminar Hall</h2>
+
+<p><b>Location:</b> IMERT Block</p>
+<p><b>Capacity:</b> 150 – 180 People</p>
+
+<h3>Facilities</h3>
+
+<ul>
+<li>Large projector screen</li>
+<li>Advanced sound system</li>
+<li>Stage for speakers</li>
+<li>Multiple microphones</li>
+<li>Air conditioned hall</li>
+<li>Large seating capacity</li>
+</ul>
+
+<h3>Suitable For</h3>
+
+<ul>
+<li>Large seminars</li>
+<li>Department conferences</li>
+<li>Guest lectures</li>
+<li>Cultural presentations</li>
+</ul>
+
+<h3>Important Rules</h3>
+
+<ul>
+<li>Booking must be done in advance</li>
+<li>Hall must be used responsibly</li>
+<li>Equipment should not be moved</li>
+<li>Follow admin instructions</li>
+</ul>
+
+<h3>Coordinator</h3>
+
+<ul>
+<li><b>Name:</b> Nidhi Yadav</li>
+<li><b>Phone:</b> 76549876</li>
+<li><b>Email:</b> nidhiyadav2024.comp@mmcoe.edu.in</li>
+</ul>
+
+</div>
+
+</div>
+
+<div class="button-container">
+
+<button class="login-btn" onclick="goToLogin()">
+Proceed to Login
+</button>
+
+</div>
+
+<script>
+
+function goToLogin(){
+window.location.href="login.html";
+}
+
+</script>
+
+</body>
+</html>
