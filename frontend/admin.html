@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<title>Seminar Hall Admin Dashboard</title>
+
+<link rel="stylesheet"
+href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css"
+rel="stylesheet">
+
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+
+<style>
+
+body{
+background:linear-gradient(135deg,#141e30,#243b55);
+min-height:100vh;
+font-family:Segoe UI, sans-serif;
+}
+
+.navbar{
+box-shadow:0 4px 15px rgba(0,0,0,0.4);
+}
+
+.dashboard-card{
+background:#0f172a;
+border-radius:14px;
+padding:25px;
+box-shadow:0 15px 35px rgba(0,0,0,0.6);
+margin-bottom:25px;
+}
+
+.dashboard-title{
+color:white;
+font-weight:600;
+}
+
+.fc-button{
+background:#ff7a18 !important;
+border:none !important;
+}
+
+.fc-button:hover{
+background:#ffa03a !important;
+}
+
+.fc-toolbar-title{
+color:white !important;
+font-weight:600;
+}
+
+.fc-col-header-cell{
+background:#111827;
+color:white;
+}
+
+.fc-col-header-cell-cushion{
+color:white !important;
+}
+
+.fc-daygrid-day{
+background:#1f2937;
+}
+
+.fc-daygrid-day-number{
+color:white !important;
+font-weight:600;
+}
+
+.fc-event{
+background:#C41E3A!important;
+border:none !important;
+border-radius:6px;
+font-size:12px;
+padding:4px;
+color:white !important;
+}
+
+.fc-event:hover{
+background:#942222 !important;
+}
+
+/* HOLIDAY GREY CELLS */
+
+.fc-bg-event{
+background:#9ca3af !important;
+opacity:0.4;
+}
+
+.main-layout{
+display:flex;
+gap:40px;
+align-items:flex-start;
+}
+
+.sidebar{
+width:260px;
+background:#0f172a;
+border-radius:12px;
+padding:15px;
+box-shadow:0 10px 25px rgba(0,0,0,0.6);
+height:520px;
+overflow:auto;
+}
+
+.sidebar h5{
+color:#ff7a18;
+margin-bottom:15px;
+}
+
+.booking-card{
+background:#1f2937;
+padding:10px;
+border-radius:8px;
+margin-bottom:10px;
+font-size:13px;
+border-left:3px solid #ff7200;
+color:white;
+transition:all .25s ease;
+}
+
+.booking-card.active{
+transform:scale(1.05);
+background:#2d3748;
+box-shadow:0 0 12px rgba(255,114,0,0.7);
+}
+
+#calendar{
+flex:1;
+min-width:950px;
+height:520px;
+}
+
+.table-dark{
+background:#0f172a;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<nav class="navbar navbar-dark bg-dark px-4">
+
+<h4 style="color:#ff7200">Seminar Hall Admin</h4>
+
+<div>
+<a href="admin.html" class="btn btn-outline-light me-2">Calendar</a>
+<a href="admin-dashboard.html" class="btn btn-outline-light me-2">Dashboard</a>
+<a href="index.html" class="btn btn-danger">Logout</a>
+</div>
+
+</nav>
+
+
+
+<div class="container mt-4">
+
+<div class="dashboard-card">
+
+<h4 class="dashboard-title mb-3">
+Seminar Hall Booking Calendar
+</h4>
+
+<div class="main-layout">
+
+<div class="sidebar">
+<h5>Booked Slots</h5>
+<div id="sidebarBookings"></div>
+</div>
+
+<div id="calendar"></div>
+
+</div>
+
+</div>
+
+</div>
+
+
+
+<div class="container">
+
+<div class="dashboard-card">
+
+<h4 class="dashboard-title mb-3">
+Booking Requests
+</h4>
+
+<table class="table table-dark table-bordered">
+
+<thead>
+<tr>
+<th>ID</th>
+<th>Hall</th>
+<th>Date</th>
+<th>Time</th>
+<th>Event</th>
+<th>Department</th>
+<th>Status</th>
+<th>Action</th>
+</tr>
+</thead>
+
+<tbody id="requestsTable"></tbody>
+
+</table>
+
+</div>
+
+</div>
+
+
+<script>
+
+const API="http://localhost:5000";
+
+/* HOLIDAY LIST */
+
+const holidays=[
+"2026-03-03",
+"2026-04-03",
+"2026-04-14",
+"2026-02-19",
+"2026-03-19",
+"2026-03-21",
+"2026-05-01",
+"2026-05-23"
+];
+
+let calendar;
+let tooltip;
+
+document.addEventListener("DOMContentLoaded",function(){
+
+const calendarEl=document.getElementById("calendar");
+
+calendar=new FullCalendar.Calendar(calendarEl,{
+
+initialView:"dayGridMonth",
+
+contentHeight:520,
+
+headerToolbar:{
+left:"prev,next today",
+center:"title",
+right:"dayGridMonth"
+},
+
+events:loadEvents
+
+});
+
+calendar.render();
+
+loadRequests();
+
+});
+
+
+function loadEvents(fetchInfo,successCallback){
+
+fetch(API+"/bookings")
+
+.then(res=>res.json())
+
+.then(data=>{
+
+let events=[];
+let sidebarHTML="";
+
+data.forEach((b,index)=>{
+
+let date=b.booking_date.split("T")[0];
+let id="event"+index;
+
+events.push({
+
+id:id,
+
+title:
+(b.hall_name || (b.hall_id==1?"Seminar Hall 405":"IMERT Seminar Hall"))
++" - "+
+(b.event_name || "Seminar")+
+" ("+
+b.start_time.substring(0,5)+
+" - "+
+b.end_time.substring(0,5)+
+")",
+
+start:date+"T"+b.start_time,
+end:date+"T"+b.end_time
+
+});
+
+sidebarHTML+=`
+
+<div class="booking-card" id="side-${id}">
+<b>${b.event_name || "Seminar"}</b><br>
+${date}<br>
+${b.start_time.substring(0,5)} - ${b.end_time.substring(0,5)}
+</div>
+
+`;
+
+});
+
+/* ADD HOLIDAY GREY BACKGROUND */
+
+holidays.forEach(d=>{
+events.push({
+start:d,
+display:"background"
+});
+});
+
+document.getElementById("sidebarBookings").innerHTML=sidebarHTML;
+
+successCallback(events);
+
+});
+
+}
+
+
+function loadRequests(){
+
+fetch(API+"/requests")
+
+.then(res=>res.json())
+
+.then(data=>{
+
+let html="";
+
+data.forEach(r=>{
+
+html+=`
+
+<tr>
+
+<td>${r.booking_id}</td>
+<td>${r.hall_name || (r.hall_id==1?"Seminar Hall 405":"IMERT Seminar Hall")}</td>
+<td>${r.booking_date}</td>
+<td>${r.start_time} - ${r.end_time}</td>
+<td>${r.event_name}</td>
+<td>${r.dept}</td>
+
+<td>
+<span class="badge
+${r.status==="Approved"?"bg-danger":
+r.status==="Pending"?"bg-warning":"bg-secondary"}">
+${r.status}
+</span>
+</td>
+
+<td>
+
+${r.status==="Pending"
+
+?
+
+`
+<button class="btn btn-success btn-sm" onclick="approve(${r.booking_id})">Approve</button>
+<button class="btn btn-warning btn-sm" onclick="reject(${r.booking_id})">Reject</button>
+<button class="btn btn-danger btn-sm" onclick="deleteBooking(${r.booking_id})">Delete</button>
+`
+
+:
+
+`
+<button class="btn btn-danger btn-sm" onclick="deleteBooking(${r.booking_id})">Delete</button>
+`
+}
+
+</td>
+
+</tr>
+
+`;
+
+});
+
+document.getElementById("requestsTable").innerHTML=html;
+
+});
+
+}
+
+
+function approve(id){
+
+fetch(API+"/approve",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({id:id})
+})
+.then(res=>res.text())
+.then(data=>{
+alert(data);
+calendar.refetchEvents();
+loadRequests();
+});
+
+}
+
+
+function reject(id){
+
+fetch(API+"/reject",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({id:id})
+})
+.then(res=>res.text())
+.then(data=>{
+alert(data);
+calendar.refetchEvents();
+loadRequests();
+});
+
+}
+
+
+function deleteBooking(id){
+
+if(!confirm("Delete this booking permanently?")) return;
+
+fetch(API+"/deleteBooking",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({id:id})
+})
+.then(res=>res.text())
+.then(data=>{
+alert(data);
+calendar.refetchEvents();
+loadRequests();
+});
+
+}
+
+</script>
+
+</body>
+</html>
