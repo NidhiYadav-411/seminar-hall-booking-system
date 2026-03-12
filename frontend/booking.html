@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div class="container mt-5">
+
+<div class="card-dark col-md-6 mx-auto">
+
+<h3>Book Seminar Hall</h3>
+
+Hall:
+<select id="hall" class="form-control mb-2">
+<option value="1">Seminar Hall 405</option>
+<option value="2">IMERT Seminar Hall</option>
+</select>
+
+Date:
+<input id="date" type="date" class="form-control mb-2">
+
+Start Time:
+<input id="start" type="time" step="60" class="form-control mb-2">
+
+End Time:
+<input id="end" type="time" step="60" class="form-control mb-2">
+
+Event Name:
+<input id="event" class="form-control mb-2" placeholder="Event Name">
+
+Event Details:
+<input id="details" class="form-control mb-2" placeholder="Event Details">
+
+Department:
+<input id="dept" class="form-control mb-3" placeholder="Department">
+
+<button class="btn-orange w-100" onclick="book()">Submit Request</button>
+
+</div>
+
+</div>
+
+<script src="script.js"></script>
+
+</body>
+</html>
