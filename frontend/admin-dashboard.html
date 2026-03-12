@@ -9,6 +9,9 @@
 <link rel="stylesheet"
 href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
 
+<!-- PDF LIBRARY -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
 <style>
 
 body{
@@ -51,6 +54,10 @@ box-shadow:0 10px 30px rgba(0,0,0,0.6);
 
 <h4 class="text-white mb-3">Booking History</h4>
 
+<button class="btn btn-warning mb-3" onclick="generateReport()">
+Generate Approved Bookings Report
+</button>
+
 <table class="table table-dark table-bordered">
 
 <thead>
@@ -81,6 +88,8 @@ box-shadow:0 10px 30px rgba(0,0,0,0.6);
 
 const API="http://localhost:5000";
 
+let bookingData=[];
+
 loadHistory();
 
 function loadHistory(){
@@ -90,6 +99,8 @@ fetch(API+"/requests")
 .then(res=>res.json())
 
 .then(data=>{
+
+bookingData=data;
 
 let html="";
 
@@ -146,6 +157,7 @@ document.getElementById("historyTable").innerHTML=html;
 
 }
 
+
 function deleteBooking(id){
 
 if(!confirm("Delete this booking permanently?")) return;
@@ -169,6 +181,49 @@ alert(data);
 loadHistory();
 
 });
+
+}
+
+
+
+/* GENERATE PDF REPORT */
+
+function generateReport(){
+
+const { jsPDF } = window.jspdf;
+
+let doc = new jsPDF();
+
+doc.setFontSize(16);
+doc.text("Seminar Hall Approved Booking Report",20,20);
+
+let y=40;
+
+bookingData
+.filter(b => b.status === "Approved")
+.forEach((b,index)=>{
+
+let hallName = b.hall_name || (b.hall_id==1?"Seminar Hall 405":"IMERT Seminar Hall");
+
+doc.setFontSize(11);
+
+
+doc.text(`Hall: ${hallName}`,20,y+7);
+doc.text(`Date: ${b.booking_date}`,20,y+14);
+doc.text(`Time: ${b.start_time} - ${b.end_time}`,20,y+21);
+doc.text(`Event: ${b.event_name}`,20,y+28);
+doc.text(`Department: ${b.dept}`,20,y+35);
+
+y += 50;
+
+if(y>260){
+doc.addPage();
+y=20;
+}
+
+});
+
+doc.save("Approved_Booking_Report.pdf");
 
 }
 
